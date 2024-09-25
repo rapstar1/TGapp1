@@ -3,7 +3,7 @@ import requests
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from wallet_manager import create_wallet, import_wallet
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 # Initialize Flask app
@@ -46,7 +46,7 @@ def api_import_wallet():
 async def create_wallet_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Make a request to Flask API to create a wallet
-        response = requests.post('http://localhost:5000/api/create-wallet')  # 确保Flask应用的URL正确
+        response = requests.post('https://tgapp1.onrender.com/api/create-wallet')  # 确保Flask应用的URL正确
         result = response.json()
         if 'error' in result:
             await update.message.reply_text(f"Error: {result['error']}")
@@ -65,7 +65,7 @@ async def import_wallet_command(update: Update, context: ContextTypes.DEFAULT_TY
             return
         
         # Make a request to Flask API to import a wallet
-        response = requests.post('http://localhost:5000/api/import-wallet', json={'wallet_data': wallet_data})
+        response = requests.post('https://tgapp1.onrender.com/api/import-wallet', json={'wallet_data': wallet_data})
         result = response.json()
         if 'error' in result:
             await update.message.reply_text(f"Error: {result['error']}")
@@ -74,9 +74,24 @@ async def import_wallet_command(update: Update, context: ContextTypes.DEFAULT_TY
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
 
+# New: Telegram command to start and show Open APP button
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        # Creating an inline button for opening the app
+        keyboard = [[InlineKeyboardButton("Open APP", url="https://tgapp1.onrender.com/")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        # Sending a message with the inline button
+        await update.message.reply_text('点击打开应用程序:', reply_markup=reply_markup)
+    except Exception as e:
+        await update.message.reply_text(f"An error occurred: {str(e)}")
+
 # Register the Telegram commands
 application.add_handler(CommandHandler('create_wallet', create_wallet_command))
 application.add_handler(CommandHandler('import_wallet', import_wallet_command))
+
+# Register the start command to send the inline button
+application.add_handler(CommandHandler('start', start))
 
 # Function to run Flask app and Telegram bot
 def run_flask():
