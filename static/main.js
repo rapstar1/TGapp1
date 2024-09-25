@@ -1,5 +1,5 @@
 function createWallet() {
-    fetch('http://127.0.0.1:5000/api/create-wallet', {
+    fetch('https://tgapp1.onrender.com/api/create-wallet', {  
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
